@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import re
 
 from dotenv import load_dotenv
 
@@ -9,6 +8,7 @@ import llm
 from audio import Audio
 from diarization import Diarization
 from formatter import format_dialogue
+from regex_filter import FilteringString, RegexFilter
 from transcriptor import Transcriptor
 from voice import voices_to_dict
 from voicedb import VoiceDb
@@ -76,22 +76,21 @@ def run_with_file(audio_file: str):
             logging.info(f"{sp}'s voice found in the voicedb")
             in_db.append(sp)
 
-    prompt = llm.generate_prompt(dialogue, 1, in_db)
-
     logging.info("Sending the request to LLM...")
-    response = llm.send_request(prompt, os.getenv("OLLAMA_API_URL"), os.getenv("OLLAMA_MODEL"))
-    logging.info("Got response from LLM")
-    r = response['response'] # type: ignore
-    logging.debug(r)
+    try:
+        response = llm.analyze_with_llm(dialogue, 1, in_db, os.getenv("OLLAMA_API_URL"), os.getenv("OLLAMA_MODEL"))
+        logging.info("Got response from LLM")
+        r = FilteringString(response['response']).filter(RegexFilter.md_json()) # type: ignore
+        logging.debug(r)
 
-    cleaned = re.sub(r"```json\s*|\s*```", "", r, flags=re.IGNORECASE).strip()
+        data = json.loads(str(r))
+        logging.debug(data)
 
-    data = json.loads(cleaned)
-    logging.debug(data)
+        save_scam_voice(data, in_db, speaker_embeddings, vdb)
 
-    save_scam_voice(data, in_db, speaker_embeddings, vdb)
+        print("\n\n")
+        print("=================РЕЗУЛЬТАТ=================")
 
-    print("\n\n")
-    print("=================РЕЗУЛЬТАТ=================")
-
-    format_output(data)
+        format_output(data)
+    except Exception as e:
+        print(f"Произошла ошибка: {str(e)}")
