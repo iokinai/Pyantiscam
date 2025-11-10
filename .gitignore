@@ -1,0 +1,4 @@
+hvenv/
+__pycache__/
+voicedb/
+.env
