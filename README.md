@@ -1,6 +1,7 @@
 # Pyantiscam
 
-Для хакатона 2025 AI SHIELD
+ДЗ 2 для хакатона 2025 AI SHIELD
+Команда: CSITeam
 
 ### Зависимости
 Список зависимостей представлен в файле requirenments.txt
