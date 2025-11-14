@@ -9,6 +9,7 @@ from audio import Audio
 from diarization import Diarization
 from formatter import format_dialogue
 from regex_filter import FilteringString, RegexFilter
+from report import Report
 from transcriptor import Transcriptor, TranscriptorResult
 from voice import voices_to_dict
 from voicedb import VoiceDb
@@ -20,7 +21,7 @@ def save_scam_voice(result, known, voices, vdb: VoiceDb):
         if speaker not in known:
             vdb.add_scammer(voices[speaker])
 
-def format_output(result):
+def format_output(result, audio_dur):
     print(f"Описание звонка: {result["summary"]}")
     print(f"Тип звонка: {result["category"]}")
     print(f"Риск-скор: {result["risk_score"]}")
@@ -46,7 +47,9 @@ def run(audio_env: str | None, audio_hardcoded: str | None):
     else:
         raise RuntimeError("Audio path is not provided")
 
-    output_results(audio_path)
+    audio = Audio(audio_path)
+
+    output_results(audio)
 
 
 class AnalyzerEnvironment:
@@ -119,7 +122,7 @@ class AnalyzerEnvironment:
         save_scam_voice(data, skip, voices, self.voice_db)
 
 
-def run_with_file(audio_file: str):
+def run_with_file(audio: Audio):
     load_dotenv()
 
     model = "pyannote/speaker-diarization-community-1"
@@ -135,9 +138,7 @@ def run_with_file(audio_file: str):
     env = AnalyzerEnvironment(model, interference_model, vdb, tk)
     logging.info("Loaded environment")
 
-    audio = Audio(audio_file)
-
-
+    #audio = Audio(audio_file)
 
     data = env.analyze_from_zero(audio, 1, os.getenv("OLLAMA_API_URL"), os.getenv("OLLAMA_MODEL"))
 
@@ -178,12 +179,15 @@ def run_with_file(audio_file: str):
 
     return data
 
-def output_results(audio_file: str):
+def output_results(audio: Audio):
     try:
-        result = run_with_file(audio_file)
+        result = run_with_file(audio)
 
         print("\n\n")
         print("=================РЕЗУЛЬТАТ=================")
         format_output(result)
+        rep = Report(result, audio.get_audio_duration())
+        rep.save_pdf()
+        rep.save_json()
     except Exception as e:
         print(f"Произошла ошибка: {e}")

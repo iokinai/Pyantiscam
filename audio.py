@@ -29,6 +29,12 @@ class Audio:
 
         return {"waveform": self.waveform, "sample_rate": self.target_sr, "uri": "audio"}
 
+    def get_audio_duration(self):
+        info = torchaudio.info(self.path)
+
+        duration = info.num_frames / info.sample_rate
+        return duration
+
 
 class WaveformAudio:
     def __init__(self, waveform: Tensor, sr: int):
