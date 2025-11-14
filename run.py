@@ -29,10 +29,12 @@ def format_output(result):
         print("Индикаторы мощенничества: " + ", ".join(result["indicators"]))
 
     try:
-        suspicious_moments = result["suspiscious_segments"]
-        print("==================Подозрительные моменты==================")
-        for moment in suspicious_moments:
-            print(f"Начало: {moment.start}, конец: {moment.end}, текст: {moment.text}, причина: {moment.reason}")
+        susp = result['suspiscious_segments']
+
+        for moment in susp:
+            print(moment)
+    except KeyError:
+        pass
 
 def run(audio_env: str | None, audio_hardcoded: str | None):
     audio_path = None

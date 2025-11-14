@@ -84,7 +84,7 @@ def generate_regular_prompt(dialogue: list[str], call_number: int, ksv: list[str
         // Спикеры, являющиеся мошенниками (например, [SPEAKER_00, SPEAKER_01])
         "scammers": [string],
         // Подозрительные сегменты
-        "suspiscious_segments": {
+        "suspiscious_segments": [{
             // Начало сегмента
             "start": number,
             // Конец сегмента
@@ -93,7 +93,7 @@ def generate_regular_prompt(dialogue: list[str], call_number: int, ksv: list[str
             "text": string,
             // Причина, почему он подозрительный
             "reason": string
-        }
+        }]
     }
     ВАЖНО: Вывод строго соответствует схеме JSON. Никаких дополнительных полей, вложенных объектов, или советов давать нельзя. Так же нельзя переименовывать поля, переводить их на русский язык и так далее. Схема должна быть строго такой
     Выходные данные будут обрабатываться программой, поэтому любые отличия от этой схемы приведут к ошибке
